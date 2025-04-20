@@ -95,10 +95,21 @@ plot_usmap(data = state_rates, values = "mean_rate") +
 
 # 4. Statistical Analysis  
 
-## ANOVA: State vs. Heart Disease Mortality  
+## ANOVA – Heart Disease by State
 ```{r anova}
 anova_model <- aov(death_rate ~ state, data = filter(df, cause == "Heart disease"))
 summary(anova_model)
+```
+
+## Chi-Square – Cause Distribution 1999 vs 2017
+```{r chi-square}
+tab <- df %>%
+  filter(year %in% c(1999, 2017), cause != "All causes") %>%
+  group_by(year, cause) %>%
+  summarise(deaths = sum(deaths)) %>%
+  pivot_wider(names_from = year, values_from = deaths, values_fill = 0)
+
+chisq.test(tab[,-1])
 ```
 
 **Result**: Significant differences exist between states (p < 0.001).  
@@ -156,9 +167,10 @@ knitr::kable(results, caption = "Model Comparison (Lower RMSE = Better Performan
 ---
 
 # 7. Conclusion  
-- Southern states need targeted heart disease prevention programs  
-- Year is a strong predictor of mortality decline (β = -1.2/year)  
-- Limitations: Lack of socioeconomic variables in dataset  
+- Southern states exhibit highest heart disease mortality
+- Year and state are strong predictors
+- Linear regression outperformed RF for heart disease
+- Intervention efforts should prioritize high-burden states
 
 ```{r include=FALSE}
 # References (hidden in final report)
