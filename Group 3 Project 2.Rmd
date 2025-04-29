@@ -1,0 +1,155 @@
+---
+title: "Analyzing The Leading Causes of Death in the USA"
+author: Ashley Gyapomah, Omissy
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    toc: true
+    toc_depth: 3
+    toc_float: yes
+date: "2025-04-15"
+---
+
+```{r init, include=F}
+# The package "ezids" (EZ Intro to Data Science) includes a lot of the helper functions we developed for the course. 
+# Some of the frequently used functions are loadPkg(), xkabledply(), xkablesummary(), uzscale(), etc.
+library(dplyr)
+library(ggplot2)
+library(pROC)
+library(rpart)
+library(rpart.plot)
+library(knitr)
+```
+
+
+
+```{r setup, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+# knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+
+```
+
+``` {r}
+death_data <- read.csv("causes-of-death.csv", stringsAsFactors = FALSE)
+death_data <- death_data[death_data$`Cause.Name` != "All causes", ]
+death_data<- death_data[, !names(death_data) %in% c("X113.Cause.Name")]
+
+colnames(death_data) <- c("Year", "Cause", "State", "Deaths", "Death_Rate")
+
+death_data$Year <- as.numeric(death_data$Year)
+death_data$State <- as.factor(death_data$State)
+death_data$Cause <- as.factor(death_data$Cause)
+death_data$Death_Rate <- as.numeric(death_data$Death_Rate)
+
+str(death_data)
+colSums(is.na(death_data))
+
+summary(death_data)
+```
+
+# **Abstract**
+
+This project explores the leading causes of death in the United States from 1999 to 2017 using age-adjusted mortality data collected from national death certificates. The goal was to investigate how mortality patterns have changed over time, varied by state, and evolved among major causes such as heart disease, cancer, unintentional injuries, and suicide. Using exploratory data analysis and statistical testing, we addressed three SMART research questions focused on temporal trends, regional disparities, and cause-specific mortality shifts.
+Our findings show a national decline in mortality rates from 1999 to 2010, followed by a modest increase, potentially linked to the rise of the opioid epidemic and behavioral health crises. Geographic analysis revealed significant differences in mortality between states, with the South consistently reporting higher death rates than states like California or Hawaii. Trend analysis across causes revealed a decline in heart disease and cancer, alongside rising rates of unintentional injuries and suicide, particularly after 2010.
+The analysis provides meaningful insight into public health progress and challenges over nearly two decades. While the dataset offered rich national and state-level detail, limitations such as missing demographic variables suggest future research should explore disparities by age, race, and socioeconomic status. Our conclusions underscore the importance of data-driven public health strategies that address both chronic and emerging causes of death through targeted prevention and policy interventions.
+
+
+# Introduction
+
+In a world of public health, observing mortality rates and trends will always present itself as a source of important information. Understanding mortality trends is essential for public health planning, policy-making, and medical advancements. Analyzing the leading causes of death in the United States from 1999 to 2017 provides valuable insights into long-term health patterns, disparities between states, and the effectiveness of public health interventions. 
+
+As time goes on, the mortality rates increase, as well as the age rate for how long people live and, therefore, die from natural causes. Mortality rates fluctuate due to a combination of medical advancements, policy changes, socio-economic factors, and public health initiatives. For instance, cancer mortality has declined due to improvements in early detection and treatment, while opioid-related death hs have surged due to the opioid epidemic in the 2010s. Similarly, heart disease remains the leading cause of death, but states with strong preventive health policies show lower mortality rates. These are just a few of the notable trends observed in the U.S. With our dataset, we aim to explore these patterns further and uncover additional insights.
+
+By analyzing this dataset, our goal is to identify the following:   
+
+
+## SMART Research Questions
+1. **Can we predict death rates from major causes based on location and time using linear regression and regression trees?**
+2. **Which factors, including time and geography, are most associated with higher mortality rates from heart disease across different states?**
+
+
+
+
+
+# Exploratory Data Analysis (EDA)
+
+## Overall Death Rate Trends Over Time 
+
+```{r}
+ggplot(death_data, aes(x = Year, y = Death_Rate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  labs(title = "Death Rates Over Time", x = "Year", y = "Death Rate")
+```
+
+## Death Rates by Region 
+
+```{r}
+ggplot(death_data, aes(x = State, y = Death_Rate)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Death Rates by State", x = "State", y = "Death Rate")
+```
+
+## Correlations Between Numeric Variables 
+
+```{r}
+library(corrplot)
+death_data_num <- death_data %>% select_if(is.numeric)
+corrplot(cor(death_data_num, use="complete.obs"), method="circle")
+
+```
+
+# Model Building
+
+## Linear Regression Model (GLM)
+
+```{r}
+death_data$Death_Rate <- as.numeric(as.character(death_data$Death_Rate))
+model_linear <- lm(Death_Rate ~ Year + State, data = death_data)
+summary(model_linear)
+
+```
+
+Interpretation:
+
+# Model Diagnostic 
+
+```{r}
+plot(model_linear, which = 1)  # Residuals vs Fitted
+plot(model_linear, which = 2)  # Normal Q-Q Plot
+
+summary(model_linear)$r.squared
+summary(model_linear)$adj.r.squared
+
+```
+Evaluation:
+
+
+# Regression Tree Modeling 
+
+## Building a Regression Tree
+
+```{r}
+tree_model <- rpart(Death_Rate ~ Year + State + Cause, data = death_data, method = "anova")
+rpart.plot(tree_model)
+summary(tree_model)
+```
+
+# Comparison and Evaluation
+
+# Conclusion
+
+# **Discussion & Insights**
+
+# **References**
+Centers for Disease Control and Prevention. (2024, November 1). Understanding the opioid overdose  epidemic. Centers for Disease Control and Prevention. https://www.cdc.gov/overdose-prevention/about/understanding-the-opioid-overdose-epidemic.html 
+
+Kaggle. (n.d.). Leading causes of death (1999-2017) [Data set]. Kaggle. https://www.kaggle.com/datasets/kj9986/leading-causes-of-death
