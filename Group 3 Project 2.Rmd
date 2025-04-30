@@ -76,8 +76,6 @@ By analyzing this dataset, our goal is to identify the following:
 
 
 
-
-
 # Exploratory Data Analysis (EDA)
 
 ## Overall Death Rate Trends Over Time 
@@ -89,7 +87,10 @@ ggplot(death_data, aes(x = Year, y = Death_Rate)) +
   labs(title = "Death Rates Over Time", x = "Year", y = "Death Rate")
 ```
 
-## Death Rates by Region 
+The scatterplot of death rates over time reveals a general decline in age-adjusted mortality rates in the United States from 1999 to 2017. A fitted linear trendline confirms this downward movement, suggesting steady improvements in public health and healthcare access. Variability among states and causes was higher at the beginning of the period but appears to decrease over time, indicating a possible convergence in mortality outcomes across different regions and disease types. The reduction in extremely high death rates over time highlights the success of targeted health interventions for high-risk causes.
+
+
+## Death Rates by State 
 
 ```{r}
 ggplot(death_data, aes(x = State, y = Death_Rate)) +
@@ -97,6 +98,22 @@ ggplot(death_data, aes(x = State, y = Death_Rate)) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Death Rates by State", x = "State", y = "Death Rate")
 ```
+
+The boxplot of death rates by state reveals marked geographic disparities in mortality rates across the United States. Southern states, including Mississippi, Alabama, and West Virginia, exhibit consistently higher median death rates, while states in the Northeast and West, such as New York and California, show lower death rates. Significant variability within states highlights the differing impacts of leading causes of death. The presence of outliers suggests that certain causes contribute disproportionately to mortality in some regions. These findings emphasize the need for region-specific public health interventions to address the underlying drivers of excess mortality.
+
+## Death Rates by Cause 
+
+```{r}
+ggplot(death_data, aes(x = Cause, y = Death_Rate)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Death Rates by Cause", x = "Cause", y = "Death Rate")
+```
+
+The distribution of death rates by cause reveals that heart disease and cancer are the predominant contributors to mortality in the United States. Both causes demonstrate substantially higher median death rates compared to other leading causes. Heart disease, in particular, exhibits wide variability, suggesting regional or temporal disparities in cardiovascular health outcomes. In contrast, causes such as suicide, kidney disease, and influenza/pneumonia present much lower death rates. The presence of outliers across several causes indicates that localized spikes in mortality may occur due to environmental or social factors. These findings highlight the disproportionate impact of heart disease and cancer on overall mortality trends.
+
+
+
 
 ## Correlations Between Numeric Variables 
 
@@ -106,6 +123,10 @@ death_data_num <- death_data %>% select_if(is.numeric)
 corrplot(cor(death_data_num, use="complete.obs"), method="circle")
 
 ```
+
+The correlation matrix reveals a weak negative association between year and age-adjusted death rate, indicating a general decline in mortality over time. There is **a moderate positive correlation** between raw death counts and death rates, suggesting that areas with more deaths tend to exhibit higher age-adjusted mortality as well. Interestingly, the number of deaths shows little correlation with time, implying that while raw death counts have remained relatively stable, the burden of disease has shifted in terms of rates and potentially cause distribution. These correlations support our decision to use Year, State, and Cause as predictors in subsequent modeling.
+
+
 
 # Model Building
 
@@ -118,7 +139,9 @@ summary(model_linear)
 
 ```
 
-Interpretation:
+Interpretation: While the model confirms a national decline in death rates over time, and reveals statistically significant geographic differences, it does not explain much of the variation in death rates overall. The low R-squared values suggest that additional variables—such as cause of death, socioeconomic conditions, healthcare access, and demographics—are needed to more fully explain patterns in U.S. mortality. These results establish a strong foundation for future modeling that incorporates these additional predictors.
+
+
 
 # Model Diagnostic 
 
@@ -130,7 +153,9 @@ summary(model_linear)$r.squared
 summary(model_linear)$adj.r.squared
 
 ```
-Evaluation:
+Interpretation: To assess the performance and assumptions of the linear regression model predicting age-adjusted death rates from year and state, we examined diagnostic plots and model fit statistics.
+
+The residuals vs. fitted plot reveals a clear violation of the linear regression assumption of homoscedasticity (constant variance). Instead of a random scatter around zero, the residuals fan out in a funnel shape, indicating heteroscedasticity. This suggests that the variance in death rates increases as the predicted values rise, which could reduce the reliability of standard error estimates and p-values.
 
 
 # Regression Tree Modeling 
@@ -143,11 +168,27 @@ rpart.plot(tree_model)
 summary(tree_model)
 ```
 
+Interpretation: The regression tree model demonstrated that cause of death is the most important factor in predicting age-adjusted death rates, accounting for nearly all the model’s predictive power. The tree’s first and most impactful split separated high-mortality causes like heart disease and cancer from lower-mortality causes such as Alzheimer’s, diabetes, and pneumonia. Additional splits by year further refined the model, indicating that mortality rates have declined in more recent years. While state was considered, it did not emerge as a primary factor. Overall, the regression tree provided clear, interpretable groupings and outperformed the linear model in capturing non-linear patterns in the data.
+
 # Comparison and Evaluation
 
 # Conclusion
 
 # **Discussion & Insights**
+
+We developed a multiple linear regression model to examine how age-adjusted death rates across the United States varied by year and state. The model identified a statistically significant downward trend over time, with each passing year associated with an average decrease of approximately 0.92 deaths per 100,000 population. This supports earlier visual analyses suggesting a gradual national decline in mortality from 1999 to 2017, likely reflecting advances in healthcare access, preventive strategies, and chronic disease management.
+
+Geographic differences also appeared relevant. Several states—such as Hawaii, Minnesota, Utah, and Connecticut—had significantly lower death rates than the reference state (likely Alabama). For example, Hawaii’s coefficient of –25.71 indicates that, on average, it experienced 25 fewer deaths per 100,000 than the reference state, even after accounting for time. However, not all state-level differences were statistically significant; states like Mississippi and West Virginia, despite slightly higher average rates, did not differ meaningfully in this model.
+
+Although the model was statistically significant (p < 0.001), its explanatory power was limited. The R-squared value was just 0.0153, with an adjusted R-squared of 0.0101, meaning the model explained only about 1–1.5% of the variation in death rates. This suggests that while time and geography play a role, they alone are insufficient to capture the complexity of mortality trends across the U.S.
+
+To complement this approach, we implemented a regression tree using year, state, and cause of death as predictors. This model, built using recursive partitioning, identified subgroups with distinct mortality patterns and allowed for the capture of non-linear relationships and interactions between variables. The results confirmed that cause of death was the most influential predictor, accounting for 98% of the model’s variable importance. The tree’s initial split separated causes into two broad groups: one consisting of lower-mortality conditions such as Alzheimer’s, diabetes, pneumonia, and kidney disease, and another composed primarily of higher-mortality causes like heart disease and cancer. The difference in average death rates between these groups was substantial, highlighting the central role of disease type in driving mortality.
+
+Additional splits showed that year contributed modestly to model performance. Among the high-mortality causes, average death rates were higher in earlier years (mean ≈ 214) and declined after 2006 (mean ≈ 173). Within the lower-mortality group, the model also distinguished between extremely low-risk and moderate-risk causes. Interestingly, state did not emerge as a primary factor in the regression tree, reinforcing the earlier conclusion that geography has a relatively minor role compared to cause of death and time.
+
+The regression tree provided a more nuanced view of mortality patterns than the linear model. It effectively captured complex, non-linear relationships and emphasized that cause of death is by far the strongest determinant of mortality rates, followed by time. The model’s structure suggests that incorporating additional categorical and interaction effects may improve predictive accuracy even further.
+
+Finally, diagnostic plots for the linear regression model revealed that key assumptions were violated. The residuals vs. fitted plot showed increasing variance across fitted values, indicating heteroscedasticity. The Q-Q plot displayed notable departures from normality, with heavy tails and skewness, suggesting the presence of influential observations and non-normal residuals. These issues, combined with the model’s low R-squared values, reinforce that the linear model does not adequately explain variation in death rates and would benefit from the inclusion of additional variables such as demographic factors, healthcare access, or behavioral health indicators.
 
 # **References**
 Centers for Disease Control and Prevention. (2024, November 1). Understanding the opioid overdose  epidemic. Centers for Disease Control and Prevention. https://www.cdc.gov/overdose-prevention/about/understanding-the-opioid-overdose-epidemic.html 
