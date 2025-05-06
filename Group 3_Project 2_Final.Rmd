@@ -25,7 +25,7 @@ This study analyzes CDC mortality data (N=10,868 observations) to identify spati
 
 Methods
 Data Sources
-CDC WONDER database: 1999-2017 mortality statistics
+CDC WONDER database: 1999-2017 mortality statistics.
 
 Age-adjusted rates per 100,000 population (2000 std. population)  
 
