@@ -281,34 +281,36 @@ While heart disease mortality declined nationally (1999–2017), geographic disp
 # **Model Selection & Results**
 Linear Regression (Inference)
 1. Heart Disease: Year coefficient of −5.4 deaths/100k/year (p < 0.001); R² = 0.93
-
+  - Key insight: Southern states (MS, AL, WV) showed persistently higher mortality (+15–23 deaths/100k) despite the national decline.
 2. Cancer: Similar declining trend; R² = 0.96
 
-3. Unintentional Injuries: More variability; R² = 0.81
+3. Unintentional Injuries: Higher variability (R² = 0.81), with regression trees outperforming linear models.
 
-4. All-Cause Mortality: R² = 0.015, indicating poor fit
+4. All-Cause Mortality: R² = 0.015, indicating poor fit, reflecting heterogeneous drivers.
 
 Diagnostic plots confirm model assumptions for specific causes but not for all-cause mortality.
 
 Regression Trees (Prediction)
 1. Heart Disease: R² = 0.86
-
-2. Unintentional Injuries: R² = 0.76
+  - Key insight: Splits on year ≥ 2006 and state clusters (Southern/Rust Belt) explain persistent disparities. Terminal nodes for Southern states (e.g., MS, AL) predict rates >220 deaths/100k.
+2. Unintentional Injuries: R² = 0.76 Trees reveal state-specific thresholds (e.g., rural vs. urban policies).
 
 Regression trees provide interpretable decision rules aiding in public health forecasting.
 
 # **Interpretation & Limitations**
 High R² for Specific Causes
-1. Consistency: Strong, stable temporal trends and geographic patterns.
-2. Public Health Efforts: Reflects effectiveness of interventions like statin use and smoking bans.
+1. Heart Disease: Strong trends reflect national progress (e.g., statins, smoking bans), but geographic disparities (Southern states) persist.
+2. Regression Trees: Provide actionable rules (e.g., "prioritize states where year < 2006 AND region = South").
 
 Low R² for All-Cause Mortality
-1. Heterogeneity: Combining diverse causes dilutes specific patterns.
-2. Missing Variables: Lack of socioeconomic and behavioral data limits explanatory power.
+1. Heterogeneity: Aggregating causes masks specific drivers (e.g., heart disease declines vs. opioid crisis spikes).
 
 Model Reliability
-1. Specific Causes: High R² indicates robust trends but does not imply causation.
-2. All-Cause Mortality: Low R² signals need for richer data.
+1. Specific Causes vs. All-Cause Mortality
+High R² values for specific causes like heart disease and cancer suggest strong, stable patterns over time and across states. However, these associations do not imply causation. The lower R² for all-cause mortality highlights the limitations of aggregated models in capturing nuanced trends, underscoring the importance of analyzing individual causes separately.
+
+2. Causality, Confounders, and Data Gaps
+While models explain what is happening—such as persistent mortality in Southern states—they fall short in explaining why. Key drivers like income, education, and healthcare access are missing, making it difficult to uncover the root causes behind geographic disparities. High R² without socioeconomic context may mask underlying structural issues.
 
 # **Discussion & Insights**
 
