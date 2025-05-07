@@ -17,9 +17,12 @@ date: "2025-04-15"
 library(dplyr)
 library(ggplot2)
 library(pROC)
-library(rpart)
-library(rpart.plot)
 library(knitr)
+library(tidyverse)
+library(broom)
+library(rpart.plot)
+library(usmap)
+library(viridis)
 ```
 
 
@@ -207,10 +210,9 @@ analyze_cause <- function(cause_name) {
 
 results <- map_dfr(unique(df_major$cause), analyze_cause)
 knitr::kable(results, caption = "Model Performance per Cause")
-```{r}
+```
 
 ##Interpretation
-Conclusion
 Yes, mortality rates for these causes can be predicted effectively using location (state) and time (year). The choice between linear regression and regression trees depends on the cause’s relationship with predictors:
 
 Linear models dominate for causes with strong temporal/linear trends (Cancer/Heart disease).
@@ -221,7 +223,59 @@ Trees better handle causes with state-specific non-linearities (Unintentional in
 # **Smart Question 3**
 ## Which U.S. states exhibit persistently high heart disease mortality rates, and how have these geographic disparities evolved from 1999 to 2017?
 
+```{r}
+# Filter for heart disease data
+heart_data <- df %>% 
+  filter(cause == "Heart disease") %>% 
+  mutate(state = factor(state))
 
+# Linear regression to assess impact of year and state
+lm_heart <- lm(rate ~ year + state, data = heart_data)
+summary(lm_heart)
+
+# Identify top 5 states with significantly higher mortality
+tidy(lm_heart) %>%
+  filter(str_detect(term, "state") & estimate > 0) %>%
+  arrange(desc(estimate)) %>%
+  slice_head(n = 5) %>%
+  knitr::kable(caption = "Top 5 High-Risk States for Heart Disease")
+
+# Visualize trend over time
+ggplot(heart_data, aes(x = year, y = rate)) +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Heart Disease Mortality Over Time", y = "Deaths per 100k", x = "Year")
+
+# Build regression tree for interpretability
+tree_heart <- rpart(rate ~ year + state, data = heart_data, control = rpart.control(cp = 0.005))
+rpart.plot(tree_heart, box.palette = "-RdBu", main = "Heart Disease Mortality Tree")
+```
+## Choropleth Map Comparison (1999 vs 2017)
+```{r}
+# Extract rates for 1999 and 2017
+map_1999 <- heart_data %>% filter(year == 1999) %>%
+  mutate(state = state.abb[match(state, state.name)]) %>%
+  na.omit()
+
+map_2017 <- heart_data %>% filter(year == 2017) %>%
+  mutate(state = state.abb[match(state, state.name)]) %>%
+  na.omit()
+
+# Plot 1999 map
+plot_usmap(data = map_1999, values = "rate", regions = "states") +
+  scale_fill_viridis_c(option = "magma", name = "Rate (1999)") +
+  labs(title = "Heart Disease Mortality by State (1999)")
+
+# Plot 2017 map
+plot_usmap(data = map_2017, values = "rate", regions = "states") +
+  scale_fill_viridis_c(option = "magma", name = "Rate (2017)") +
+  labs(title = "Heart Disease Mortality by State (2017)")
+
+```
+## Key Findings
+Southern states—Mississippi (MS), Alabama (AL), and West Virginia (WV)—exhibited 20–25% higher heart disease mortality rates than the national average, with significant excess deaths (e.g., MS: +22.7/100k). Nationally, rates declined by 5.4 deaths/100k yearly (*p* < 0.001), but Southern disparities persisted. Regression tree analysis revealed post-2006 improvements in most states, while Southern/Rust Belt clusters (MS, AL, WV, PA) maintained >220 deaths/100k, underscoring entrenched geographic inequities.
+
+##Conclusion
+While heart disease mortality declined nationally (1999–2017), geographic disparities persisted, with Southern states remaining hotspots. The South’s slower progress suggests systemic gaps in healthcare access, lifestyle factors, or policy implementation.
 
 
 # **Model Selection & Results**
