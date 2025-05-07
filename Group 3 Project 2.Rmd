@@ -170,9 +170,43 @@ summary(tree_model)
 
 Interpretation: The regression tree model demonstrated that cause of death is the most important factor in predicting age-adjusted death rates, accounting for nearly all the model’s predictive power. The tree’s first and most impactful split separated high-mortality causes like heart disease and cancer from lower-mortality causes such as Alzheimer’s, diabetes, and pneumonia. Additional splits by year further refined the model, indicating that mortality rates have declined in more recent years. While state was considered, it did not emerge as a primary factor. Overall, the regression tree provided clear, interpretable groupings and outperformed the linear model in capturing non-linear patterns in the data.
 
-# Comparison and Evaluation
+# **Smart Question 1**
 
-# Conclusion
+# **Smart Question 2**
+## Can we predict deaths of specific causes ( heart disease, cancer, accidents) based on location and time using linear regression and regression trees?
+
+
+# **Model Selection & Results**
+Linear Regression (Inference)
+1. Heart Disease: Year coefficient of −5.4 deaths/100k/year (p < 0.001); R² = 0.93
+
+2. Cancer: Similar declining trend; R² = 0.96
+
+3. Unintentional Injuries: More variability; R² = 0.81
+
+4. All-Cause Mortality: R² = 0.015, indicating poor fit
+
+Diagnostic plots confirm model assumptions for specific causes but not for all-cause mortality.
+
+Regression Trees (Prediction)
+1. Heart Disease: R² = 0.86
+
+2. Unintentional Injuries: R² = 0.76
+
+Regression trees provide interpretable decision rules aiding in public health forecasting.
+
+# **Interpretation & Limitations**
+High R² for Specific Causes
+1. Consistency: Strong, stable temporal trends and geographic patterns.
+2. Public Health Efforts: Reflects effectiveness of interventions like statin use and smoking bans.
+
+Low R² for All-Cause Mortality
+1. Heterogeneity: Combining diverse causes dilutes specific patterns.
+2. Missing Variables: Lack of socioeconomic and behavioral data limits explanatory power.
+
+Model Reliability
+1. Specific Causes: High R² indicates robust trends but does not imply causation.
+2. All-Cause Mortality: Low R² signals need for richer data.
 
 # **Discussion & Insights**
 
@@ -189,6 +223,13 @@ Additional splits showed that year contributed modestly to model performance. Am
 The regression tree provided a more nuanced view of mortality patterns than the linear model. It effectively captured complex, non-linear relationships and emphasized that cause of death is by far the strongest determinant of mortality rates, followed by time. The model’s structure suggests that incorporating additional categorical and interaction effects may improve predictive accuracy even further.
 
 Finally, diagnostic plots for the linear regression model revealed that key assumptions were violated. The residuals vs. fitted plot showed increasing variance across fitted values, indicating heteroscedasticity. The Q-Q plot displayed notable departures from normality, with heavy tails and skewness, suggesting the presence of influential observations and non-normal residuals. These issues, combined with the model’s low R-squared values, reinforce that the linear model does not adequately explain variation in death rates and would benefit from the inclusion of additional variables such as demographic factors, healthcare access, or behavioral health indicators.
+
+# **Recommendations**
+Targeted Interventions: Prioritize Southern states for heart disease prevention (e.g., subsidized screenings in MS).
+
+Data Enrichment: Integrate county-level income, education, and opioid prescription data.
+
+Policy Evaluation: Use difference-in-differences to assess Medicaid expansion’s impact.
 
 # **References**
 Centers for Disease Control and Prevention. (2024, November 1). Understanding the opioid overdose  epidemic. Centers for Disease Control and Prevention. https://www.cdc.gov/overdose-prevention/about/understanding-the-opioid-overdose-epidemic.html 
