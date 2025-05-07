@@ -341,3 +341,9 @@ Longitudinal Surveillance & Outcome Tracking:Partner with hospitals in high-mort
 Centers for Disease Control and Prevention. (2024, November 1). Understanding the opioid overdose  epidemic. Centers for Disease Control and Prevention. https://www.cdc.gov/overdose-prevention/about/understanding-the-opioid-overdose-epidemic.html 
 
 Kaggle. (n.d.). Leading causes of death (1999-2017) [Data set]. Kaggle. https://www.kaggle.com/datasets/kj9986/leading-causes-of-death
+
+Casper, M., Kramer, M. R., Quick, H., Schieb, L. J., Vaughan, A. S., & Greer, S. (2016). Changes in the geographic patterns of heart disease mortality in the United States: 1973 to 2010. Circulation, 133(12), 1171–1180. https://doi.org/10.1161/CIRCULATIONAHA.115.018663
+
+Heron, M. (2019). Deaths: Leading causes for 2017 (National Vital Statistics Reports, 68(6)). National Center for Health Statistics, Centers for Disease Control and Prevention.
+
+Sawyer, A., & Flagg, L. A. (2021). State declines in heart disease death rates: United States, 2000–2019 (NCHS Data Brief No. 425). Hyattsville, MD: National Center for Health Statistics.
