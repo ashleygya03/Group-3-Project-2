@@ -174,6 +174,54 @@ Interpretation: The regression tree model demonstrated that cause of death is th
 
 # **Smart Question 2**
 ## Can we predict deaths of specific causes ( heart disease, cancer, accidents) based on location and time using linear regression and regression trees?
+```{r}
+# Prepare data for selected causes
+df_major <- df %>%
+  filter(cause %in% c("Heart disease", "Cancer", "Unintentional injuries"))
+
+# Loop to train models per cause
+analyze_cause <- function(cause_name) {
+  data_cause <- df_major %>% filter(cause == cause_name)
+  set.seed(123)
+  train_idx <- createDataPartition(data_cause$rate, p = 0.8, list = FALSE)
+  train <- data_cause[train_idx, ]
+  test <- data_cause[-train_idx, ]
+  
+  # Linear regression
+  lm_model <- lm(rate ~ year + state, data = train)
+  test$pred_lm <- predict(lm_model, newdata = test)
+  
+  # Regression tree
+  tree_model <- rpart(rate ~ year + state, data = train, control = rpart.control(cp = 0.005))
+  test$pred_tree <- predict(tree_model, newdata = test)
+  
+  # Model performance
+  tibble(
+    Cause = cause_name,
+    LM_R2 = summary(lm_model)$r.squared,
+    Tree_R2 = cor(test$rate, test$pred_tree)^2,
+    LM_RMSE = sqrt(mean((test$rate - test$pred_lm)^2)),
+    Tree_RMSE = sqrt(mean((test$rate - test$pred_tree)^2))
+  )
+}
+
+results <- map_dfr(unique(df_major$cause), analyze_cause)
+knitr::kable(results, caption = "Model Performance per Cause")
+```{r}
+
+##Interpretation
+Conclusion
+Yes, mortality rates for these causes can be predicted effectively using location (state) and time (year). The choice between linear regression and regression trees depends on the cause’s relationship with predictors:
+
+Linear models dominate for causes with strong temporal/linear trends (Cancer/Heart disease).
+
+Trees better handle causes with state-specific non-linearities (Unintentional injuries).
+
+
+# **Smart Question 3**
+## Which U.S. states exhibit persistently high heart disease mortality rates, and how have these geographic disparities evolved from 1999 to 2017?
+
+
 
 
 # **Model Selection & Results**
