@@ -329,11 +329,13 @@ The regression tree provided a more nuanced view of mortality patterns than the 
 Finally, diagnostic plots for the linear regression model revealed that key assumptions were violated. The residuals vs. fitted plot showed increasing variance across fitted values, indicating heteroscedasticity. The Q-Q plot displayed notable departures from normality, with heavy tails and skewness, suggesting the presence of influential observations and non-normal residuals. These issues, combined with the model’s low R-squared values, reinforce that the linear model does not adequately explain variation in death rates and would benefit from the inclusion of additional variables such as demographic factors, healthcare access, or behavioral health indicators.
 
 # **Recommendations**
-Targeted Interventions: Prioritize Southern states for heart disease prevention (e.g., subsidized screenings in MS).
+Targeted Interventions: Focus public health efforts on Southern states—such as Mississippi and Alabama—where heart disease mortality remains highest. Implement programs like subsidized cardiovascular screenings, mobile clinics, and culturally tailored awareness campaigns.
 
-Data Enrichment: Integrate county-level income, education, and opioid prescription data.
+Data Enrichment: Enhance predictive modeling and root-cause analysis by incorporating additional variables such as county-level income, education levels, healthcare access, and opioid prescription rates.
 
 Policy Evaluation: Use difference-in-differences to assess Medicaid expansion’s impact.
+
+Longitudinal Surveillance & Outcome Tracking:Partner with hospitals in high-mortality zones (>220 deaths/100k) to track outcomes and investigate why Southern states lagged post-2006 through audits of care access and prevention gaps.
 
 # **References**
 Centers for Disease Control and Prevention. (2024, November 1). Understanding the opioid overdose  epidemic. Centers for Disease Control and Prevention. https://www.cdc.gov/overdose-prevention/about/understanding-the-opioid-overdose-epidemic.html 
