@@ -74,7 +74,7 @@ By analyzing this dataset, our goal is to identify the following:
 
 
 ## SMART Research Questions
-1. **Can we predict death rates from major causes based on location and time using linear regression and regression trees?**
+1. **Can we predict death rates from the overall causes based on location and time using linear regression and regression trees?**
 2. **Which factors, including time and geography, are most associated with higher mortality rates from heart disease across different states?**
 
 
@@ -179,8 +179,9 @@ Interpretation: The regression tree model demonstrated that cause of death is th
 ## Can we predict deaths of specific causes ( heart disease, cancer, accidents) based on location and time using linear regression and regression trees?
 ```{r}
 # Prepare data for selected causes
+df <- death_data
 df_major <- df %>%
-  filter(cause %in% c("Heart disease", "Cancer", "Unintentional injuries"))
+  filter(Cause %in% c("Heart disease", "Cancer", "Unintentional injuries"))
 
 # Loop to train models per cause
 analyze_cause <- function(cause_name) {
@@ -226,11 +227,11 @@ Trees better handle causes with state-specific non-linearities (Unintentional in
 ```{r}
 # Filter for heart disease data
 heart_data <- df %>% 
-  filter(cause == "Heart disease") %>% 
-  mutate(state = factor(state))
+  filter(Cause == "Heart disease") %>% 
+  mutate(State = factor(State))
 
 # Linear regression to assess impact of year and state
-lm_heart <- lm(rate ~ year + state, data = heart_data)
+lm_heart <- lm(Death_Rate ~ Year + State, data = heart_data)
 summary(lm_heart)
 
 # Identify top 5 states with significantly higher mortality
@@ -241,32 +242,32 @@ tidy(lm_heart) %>%
   knitr::kable(caption = "Top 5 High-Risk States for Heart Disease")
 
 # Visualize trend over time
-ggplot(heart_data, aes(x = year, y = rate)) +
+ggplot(heart_data, aes(x = Year, y = Death_Rate)) +
   geom_smooth(method = "lm", color = "red") +
   labs(title = "Heart Disease Mortality Over Time", y = "Deaths per 100k", x = "Year")
 
 # Build regression tree for interpretability
-tree_heart <- rpart(rate ~ year + state, data = heart_data, control = rpart.control(cp = 0.005))
+tree_heart <- rpart(Death_Rate ~ Year + State, data = heart_data, control = rpart.control(cp = 0.005))
 rpart.plot(tree_heart, box.palette = "-RdBu", main = "Heart Disease Mortality Tree")
 ```
 ## Choropleth Map Comparison (1999 vs 2017)
 ```{r}
 # Extract rates for 1999 and 2017
-map_1999 <- heart_data %>% filter(year == 1999) %>%
-  mutate(state = state.abb[match(state, state.name)]) %>%
+map_1999 <- map_1999 %>%
+  mutate(state = state.abb[match(State, state.name)])
   na.omit()
 
-map_2017 <- heart_data %>% filter(year == 2017) %>%
-  mutate(state = state.abb[match(state, state.name)]) %>%
+map_2017 <- heart_data %>% filter(Year == 2017) %>%
+  mutate(state = state.abb[match(State, state.name)]) %>%
   na.omit()
 
 # Plot 1999 map
-plot_usmap(data = map_1999, values = "rate", regions = "states") +
+plot_usmap(data = map_1999, values = "Death_Rate", regions = "states") +
   scale_fill_viridis_c(option = "magma", name = "Rate (1999)") +
   labs(title = "Heart Disease Mortality by State (1999)")
 
 # Plot 2017 map
-plot_usmap(data = map_2017, values = "rate", regions = "states") +
+plot_usmap(data = map_2017, values = "Death_Rate", regions = "states") +
   scale_fill_viridis_c(option = "magma", name = "Rate (2017)") +
   labs(title = "Heart Disease Mortality by State (2017)")
 
@@ -298,19 +299,23 @@ Regression Trees (Prediction)
 Regression trees provide interpretable decision rules aiding in public health forecasting.
 
 # **Interpretation & Limitations**
-High R² for Specific Causes
-1. Heart Disease: Strong trends reflect national progress (e.g., statins, smoking bans), but geographic disparities (Southern states) persist.
-2. Regression Trees: Provide actionable rules (e.g., "prioritize states where year < 2006 AND region = South").
+Our analysis provides meaningful insights into the geographic and temporal variation in age-adjusted mortality rates across the United States. Using linear regression and regression trees, we explored how well time, location, and cause of death explain mortality patterns. While the regression model showed that both year and state are statistically significant predictors, its explanatory power was relatively low (R² = 0.0153), suggesting that these variables alone capture only a small portion of the variance in overall death rates.
+
+However, when we narrowed the analysis to specific causes of death—such as heart disease and cancer—we observed a much stronger signal. These causes showed stable patterns over time, and higher R² values indicated more reliable predictions. This contrast reinforces a key insight: aggregating all causes into one model masks important trends. For example, while heart disease mortality has steadily declined due to medical advances and public health interventions (e.g., statins, smoking bans), other causes—like opioid-related deaths—have sharply increased, offsetting progress in aggregate models.
+
+The regression tree model added interpretability and actionable value by highlighting clear decision rules. It identified cause of death as the dominant factor in mortality rate prediction, followed by time. Heart disease and cancer were consistently placed in high-mortality nodes, especially before 2010, while lower-mortality causes like Alzheimer’s and unintentional injuries fell into separate branches. These splits emphasized that temporal trends and cause-specific behavior are crucial for understanding mortality variation. For example, one branch of the tree might be interpreted as: "Prioritize intervention in states with high heart disease mortality before 2006, particularly in the South."
+
+Lack of Individual-Level or Socioeconomic Data
+The dataset includes state-level aggregates and omits key drivers of health outcomes such as income, education, age distribution, race, and healthcare access. These unmeasured confounders are likely contributing to geographic disparities and cannot be captured by our current model.
 
 Low R² for All-Cause Mortality
-1. Heterogeneity: Aggregating causes masks specific drivers (e.g., heart disease declines vs. opioid crisis spikes).
+The limited performance of the full model underscores the challenge of using aggregated mortality data. Deaths from unrelated causes behave differently over time and across regions, which inflates residual variance. Disaggregating causes, as we did in cause-specific analyses, proved to be a more reliable strategy.
 
-Model Reliability
-1. Specific Causes vs. All-Cause Mortality
-High R² values for specific causes like heart disease and cancer suggest strong, stable patterns over time and across states. However, these associations do not imply causation. The lower R² for all-cause mortality highlights the limitation of aggregated models in capturing nuanced trends, underscoring the importance of analyzing individual causes separately.
+Data Gaps & Structural Factors
+While we can describe what is happening (e.g., persistent mortality in Southern states), we cannot fully explain why. Without socioeconomic and healthcare system variables, our models may capture symptoms of deeper structural issues without diagnosing them.
 
-2. Causality, Confounders, and Data Gaps
-While models explain what is happening—such as persistent mortality in Southern states—they fall short in explaining why. Key drivers like income, education, and healthcare access are missing, making it difficult to uncover the root causes behind geographic disparities. High R² without socioeconomic context may mask underlying structural issues.
+Data Preparation Challenges
+Geographic mapping relied on converting full state names to abbreviations for compatibility with usmap. Mismatches in naming conventions could result in dropped rows, potentially affecting completeness of regional visualizations.
 
 # **Discussion & Insights**
 
@@ -324,7 +329,7 @@ To complement this approach, we implemented a regression tree using year, state,
 
 Additional splits showed that year contributed modestly to model performance. Among the high-mortality causes, average death rates were higher in earlier years (mean ≈ 214) and declined after 2006 (mean ≈ 173). Within the lower-mortality group, the model also distinguished between extremely low-risk and moderate-risk causes. Interestingly, state did not emerge as a primary factor in the regression tree, reinforcing the earlier conclusion that geography has a relatively minor role compared to cause of death and time.
 
-The regression tree provided a more nuanced  view of mortality patterns than the linear model. It effectively captured complex, non-linear relationships and emphasized that cause of death is by far the strongest determinant of mortality rates, followed by time. The model’s structure suggests that incorporating additional categorical and interaction effects may improve predictive accuracy even further.
+The regression tree provided a more nuanced view of mortality patterns than the linear model. It effectively captured complex, non-linear relationships and emphasized that cause of death is by far the strongest determinant of mortality rates, followed by time. The model’s structure suggests that incorporating additional categorical and interaction effects may improve predictive accuracy even further.
 
 Finally, diagnostic plots for the linear regression model revealed that key assumptions were violated. The residuals vs. fitted plot showed increasing variance across fitted values, indicating heteroscedasticity. The Q-Q plot displayed notable departures from normality, with heavy tails and skewness, suggesting the presence of influential observations and non-normal residuals. These issues, combined with the model’s low R-squared values, reinforce that the linear model does not adequately explain variation in death rates and would benefit from the inclusion of additional variables such as demographic factors, healthcare access, or behavioral health indicators.
 
